@@ -4,8 +4,7 @@ import numpy as np
 
 
 def initialize_tello():
-    """
-    Start and initialize the drone
+    """Start and initialize the drone
     """
     my_drone = Tello()
     my_drone.connect()
@@ -21,13 +20,15 @@ def initialize_tello():
 
 
 def tello_get_frame(drone: Tello, width: int = 360, height: int = 240) -> cv2.UMat:
-    """
-    Get frame from drone, resize it and return it as cv2.UMat
+    """Get frame from drone, resize it and return it as cv2.UMat
 
-    :param drone: Ryze Tello drone object
-    :param width: width for resizing the image
-    :param height: height for resizing the image
-    :return: resized image as cv2.UMat
+    Params:
+    drone -- Ryze Tello drone object
+    width -- width for resizing the image
+    height -- height for resizing the image
+
+    Returns:
+    resized image as cv2.UMat
     """
     frame = drone.get_frame_read()
     frame = frame.frame
@@ -36,11 +37,13 @@ def tello_get_frame(drone: Tello, width: int = 360, height: int = 240) -> cv2.UM
 
 
 def find_face(image: cv2.UMat) -> tuple:
-    """
-    Detects face on image and returns the position of it
+    """Detects face on image and returns the position of it
 
-    :param image: image to find face on
-    :return: image, coordinates for the middle of the detected face
+    Params:
+    image -- image to find face on
+
+    Returns:
+    image, coordinates for the middle of the detected face
     """
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
     image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -65,15 +68,17 @@ def find_face(image: cv2.UMat) -> tuple:
 
 
 def track_face(drone: Tello, info, width: int, pid, p_error) -> int:
-    """
-    Control drone to follow face using pid controller
+    """Control drone to follow face using pid controller
 
-    :param drone: Ryze Tello drone object
-    :param info: list with coordinates for the middle point and area of face
-    :param width: width of image
-    :param pid: information for pid controller
-    :param p_error: previous error
-    :return: the current error, use it in next iteration as p_error
+    Params:
+    drone -- Ryze Tello drone object
+    info -- list with coordinates for the middle point and area of face
+    width -- width of image
+    pid -- information for pid controller
+    p_error -- previous error
+
+    Returns:
+    the current error, use it in next iteration as p_error
     """
     error = info[0][0] - width // 2
     speed = pid[0] * error + pid[1] * (error - p_error)
