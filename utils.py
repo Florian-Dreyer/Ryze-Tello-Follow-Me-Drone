@@ -1,6 +1,7 @@
 from djitellopy import Tello
 import cv2
 import numpy as np
+from Model_App import ModelApp
 
 
 def initialize_tello():
@@ -19,7 +20,7 @@ def initialize_tello():
     return my_drone
 
 
-def tello_get_frame(drone: Tello, width: int = 360, height: int = 240) -> cv2.UMat:
+def tello_get_frame(drone: Tello, width: int = 320, height: int = 320) -> cv2.UMat:
     """Get frame from drone, resize it and return it as cv2.UMat
 
     Params:
@@ -37,34 +38,24 @@ def tello_get_frame(drone: Tello, width: int = 360, height: int = 240) -> cv2.UM
 
 
 def find_face(image: cv2.UMat) -> tuple:
-    """Detects face on image and returns the position of it
+    """Detects face on image and returns the position of it.
 
     Params:
-    image -- image to find face on
+    image (cv2.UMat): image to find face on.
 
     Returns:
-    image, coordinates for the middle of the detected face
+    image, coordinates for the middle of the detected face and area.
     """
-    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-    image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(image_gray, 1.1, 6)
-
-    my_face_list_c = []
-    my_face_list_area = []
-
-    for (x, y, width, height) in faces:
-        cv2.rectangle(image, (x, y), (x + width, y + height), (0, 0, 255), 2)
-        c_x = x + width // 2
-        c_y = y + height // 2
-        area = width * height
-        my_face_list_area.append(area)
-        my_face_list_c.append([c_x, c_y])
-
-    if len(my_face_list_area) != 0:
-        i = my_face_list_area.index(max(my_face_list_area))
-        return image, [my_face_list_c[i], my_face_list_area[i]]
-    else:
+    model = ModelApp()
+    pred_box = model.predict_box(image)
+    if not pred_box:
         return image, [[0, 0], 0]
+    x_0, y_0, x_1, y_1 = pred_box
+
+    face_midpoint = [(x_0 + x_1) / 2, (y_0 + y_1) / 2]
+    face_area = [abs(x_0-x_1) * abs(y_0, y_1)]
+
+    return image, [face_midpoint, face_area]
 
 
 def track_face(drone: Tello, info, width: int, pid, p_error) -> int:
